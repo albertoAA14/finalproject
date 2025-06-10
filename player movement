@@ -1,0 +1,38 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    public float speed = 5f;               // Controls horizontal movement speed
+    public float jumpSpeed = 8f;           // Controls how high the player jumps
+    private float direction = 0f;
+    private Rigidbody2D player;
+
+    void Start()
+    {
+        player = GetComponent<Rigidbody2D>();
+    }
+
+    void Update()
+    {
+        direction = Input.GetAxis("Horizontal");
+
+        // Move the player left and right
+        player.velocity = new Vector2(direction * speed, player.velocity.y);
+
+        // Make the player jump when the Jump button is pressed
+        if (Input.GetButtonDown("Jump"))
+        {
+            player.velocity = new Vector2(player.velocity.x, jumpSpeed);
+        }
+
+        //  Fixed Line #1: Flip the player sprite to face the right direction
+        if (direction != 0)
+            transform.localScale = new Vector3(Mathf.Sign(direction), 1, 1); // Flip based on direction
+
+        // Fixed Line #2: If player falls too low (e.g. misses watermelon), reset position
+        if (transform.position.y < -10)
+            transform.position = new Vector3(0, 2, 0); // Respawn player at start position
+    }
+}
