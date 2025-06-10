@@ -1,0 +1,63 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement; // Needed for scene reloading
+
+public class PlayerController : MonoBehaviour
+{
+    public float speed = 5f;           // Player move speed
+    public float jumpSpeed = 8f;       // Jump power
+    public Transform respawnPoint;     // Where to teleport player after hitting an obstacle
+    public Transform groundCheck;      // Point to check if player is touching the ground
+    public LayerMask groundLayer;      // Which layers count as ground
+
+    private float direction = 0f;
+    private Rigidbody2D player;
+    private bool isGrounded;
+
+    void Start()
+    {
+        player = GetComponent<Rigidbody2D>();
+    }
+
+    void Update()
+    {
+        // Horizontal movement
+        direction = Input.GetAxis("Horizontal");
+
+        if (direction != 0f)
+        {
+            player.velocity = new Vector2(direction * speed, player.velocity.y);
+        }
+        else
+        {
+            player.velocity = new Vector2(0, player.velocity.y);
+        }
+
+        // Ground check using a small circle
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, 0.1f, groundLayer);
+
+        // Jump only if grounded
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            player.velocity = new Vector2(player.velocity.x, jumpSpeed);
+        }
+
+        // Reload scene if player falls below a certain Y position (e.g., fell off the map)
+        if (transform.position.y < -10f)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+
+    // Trigger-based obstacle detection
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Obstacle"))
+        {
+            // Respawn player at the respawn point
+            transform.position = respawnPoint.position;
+            player.velocity = Vector2.zero; // Reset velocity
+        }
+    }
+}
